@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "dgSpecHash": "A1GOSTmX4Uq0jggKt2x63IGnrrgSkVDEAgbLSQhh16kdMFKpkdTG78fv7tJepuGau/freyDEaZjg3MVau9dXug==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\wandy\\Downloads\\securing-aspnet-core-3-oauth2-openid-connect\\02\\demos\\start-end\\src\\ImageGallery.Client\\ImageGallery.Client.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\wandy\\.nuget\\packages\\microsoft.aspnetcore.jsonpatch\\6.0.7\\microsoft.aspnetcore.jsonpatch.6.0.7.nupkg.sha512",
+    "C:\\Users\\wandy\\.nuget\\packages\\microsoft.aspnetcore.mvc.newtonsoftjson\\6.0.7\\microsoft.aspnetcore.mvc.newtonsoftjson.6.0.7.nupkg.sha512",
+    "C:\\Users\\wandy\\.nuget\\packages\\microsoft.csharp\\4.7.0\\microsoft.csharp.4.7.0.nupkg.sha512",
+    "C:\\Users\\wandy\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512",
+    "C:\\Users\\wandy\\.nuget\\packages\\newtonsoft.json.bson\\1.0.2\\newtonsoft.json.bson.1.0.2.nupkg.sha512",
+    "C:\\Users\\wandy\\.nuget\\packages\\system.componentmodel.annotations\\5.0.0\\system.componentmodel.annotations.5.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}

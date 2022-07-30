@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "+34W/t5nxhvX+u1ZtnWAYvT/O3ZbZalsHOI1tuAagfyXqJvY7WpbovyEk7eEIIMruNaFBX8CAQIsANQXVntYxA==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\wandy\\Downloads\\securing-aspnet-core-3-oauth2-openid-connect\\02\\demos\\start-end\\src\\ImageGallery.Model\\ImageGallery.Model.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\wandy\\.nuget\\packages\\microsoft.netcore.platforms\\1.1.0\\microsoft.netcore.platforms.1.1.0.nupkg.sha512",
+    "C:\\Users\\wandy\\.nuget\\packages\\netstandard.library\\2.0.3\\netstandard.library.2.0.3.nupkg.sha512",
+    "C:\\Users\\wandy\\.nuget\\packages\\system.componentmodel.annotations\\5.0.0\\system.componentmodel.annotations.5.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
