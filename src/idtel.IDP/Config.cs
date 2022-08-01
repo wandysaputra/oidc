@@ -14,7 +14,8 @@ namespace idtel.IDP
             new IdentityResource[]
             {
                 new IdentityResources.OpenId(),
-                new IdentityResources.Profile()
+                new IdentityResources.Profile(),
+                new IdentityResources.Address() // add address resource 
             };
 
         public static IEnumerable<ApiScope> ApiScopes =>
@@ -36,13 +37,14 @@ namespace idtel.IDP
                     },
                     AllowedScopes ={
                         IdentityServerConstants.StandardScopes.OpenId,
-                        IdentityServerConstants.StandardScopes.Profile
+                        IdentityServerConstants.StandardScopes.Profile,
+                        IdentityServerConstants.StandardScopes.Address // allows to get address scope in claims
                     } ,
                     ClientSecrets={
                         new Secret("secret".Sha256())
                     },
                     RequirePkce = !false,
-                    // RequireConsent = true
+                    // RequireConsent = true 
                 }
             };
     }

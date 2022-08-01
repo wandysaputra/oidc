@@ -1,13 +1,14 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.Net.Http.Headers;
 using System;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace ImageGallery.Client
 {
@@ -18,6 +19,8 @@ namespace ImageGallery.Client
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            // clear out default claims mapping
+            JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -34,6 +37,15 @@ namespace ImageGallery.Client
                 client.DefaultRequestHeaders.Add(HeaderNames.Accept, "application/json");
             });
 
+            // create an HttpClient used for accessing the IDP API
+            services.AddHttpClient("IDPClient", client =>
+            {
+                client.BaseAddress = new Uri("https://localhost:44318/");
+                client.DefaultRequestHeaders.Clear();
+                client.DefaultRequestHeaders.Add(HeaderNames.Accept, "application/json");
+            });
+
+
             services.AddAuthentication(options =>
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -48,11 +60,25 @@ namespace ImageGallery.Client
                 options.UsePkce = !false;
                 // options.CallbackPath = new Microsoft.AspNetCore.Http.PathString("...") // default: "/signin-oidc"
                 // options.SignedOutCallbackPath = new Microsoft.AspNetCore.Http.PathString("..."); // default: signout-callback-oidc
-                options.Scope.Add("openid");
-                options.Scope.Add("profile");
+
+                // commentted out because by default added https://github.com/dotnet/aspnetcore/blob/main/src/Security/Authentication/OpenIdConnect/src/OpenIdConnectOptions.cs#L43
+                // options.Scope.Add("openid");
+                // options.Scope.Add("profile");
+
+                options.Scope.Add("address"); // request for address scope
                 options.SaveTokens = true;
                 options.ClientSecret = "secret";
                 // options.Prompt = OpenIdConnectPrompt.Consent;
+                options.GetClaimsFromUserInfoEndpoint = true;
+
+                // options.ClaimActions.Remove("nbf"); // nbf by default exlcuded, uses Remove to includes it 
+                // https://github.com/dotnet/aspnetcore/blob/main/src/Security/Authentication/OpenIdConnect/src/OpenIdConnectOptions.cs#L52
+                options.ClaimActions.DeleteClaim("sid");
+                options.ClaimActions.DeleteClaim("idp");
+                options.ClaimActions.DeleteClaim("s_hash");
+                options.ClaimActions.DeleteClaim("auth_time");
+
+                // options.ClaimActions.MapUniqueJsonKey("address", "address");
             });
         }
 

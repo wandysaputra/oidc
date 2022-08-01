@@ -1,4 +1,5 @@
-﻿using ImageGallery.Client.ViewModels;
+﻿using IdentityModel.Client;
+using ImageGallery.Client.ViewModels;
 using ImageGallery.Model;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -188,12 +189,40 @@ namespace ImageGallery.Client.Controllers
         {
             // sign out from ImageGallery Client
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            
+
             // sign out from OIDC
             await HttpContext.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
 
         }
 
+        public async Task<IActionResult> OrderFrame()
+        {
+            var idpClient = _httpClientFactory.CreateClient("IDPClient");
+
+            var metaDataResponse = await idpClient.GetDiscoveryDocumentAsync();
+
+            if (metaDataResponse.IsError)
+            {
+                throw new Exception("Problem accessing the discovery point", metaDataResponse.Exception);
+            }
+
+            var accessToken = await HttpContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
+
+            var userInfoResponse = await idpClient.GetUserInfoAsync(new UserInfoRequest
+            {
+                Address = metaDataResponse.UserInfoEndpoint,
+                Token = accessToken
+            });
+
+            if (userInfoResponse.IsError)
+            {
+                throw new Exception("Problem accessing the UserInfo endpoint.", userInfoResponse.Exception);
+            }
+
+            var address = userInfoResponse.Claims.FirstOrDefault(f => f.Type == "address")?.Value;
+
+            return View(new OrderFrameViewModel(address));
+        }
         public async Task WriteOutIdentityInformation()
         {
             // get the saved identity token
