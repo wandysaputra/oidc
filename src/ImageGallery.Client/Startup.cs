@@ -45,7 +45,7 @@ namespace ImageGallery.Client
                 options.Authority = "https://localhost:44318/";
                 options.ClientId = "imagegalleryclient";
                 options.ResponseType = "code";
-                options.UsePkce = false;
+                options.UsePkce = !false;
                 // options.CallbackPath = new Microsoft.AspNetCore.Http.PathString("...") // default: "/signin-oidc"
                 options.Scope.Add("openid");
                 options.Scope.Add("profile");

@@ -38,7 +38,7 @@ namespace idtel.IDP
                     ClientSecrets={
                         new Secret("secret".Sha256())
                     },
-                    RequirePkce = false
+                    RequirePkce = !false
                 }
             };
     }
