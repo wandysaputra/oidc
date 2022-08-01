@@ -31,6 +31,9 @@ namespace idtel.IDP
                     RedirectUris = new List<string> {
                         "https://localhost:44389/signin-oidc"
                     },
+                    PostLogoutRedirectUris = new List<string>{
+                        "https://localhost:44389/signout-callback-oidc"
+                    },
                     AllowedScopes ={
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile
@@ -38,7 +41,8 @@ namespace idtel.IDP
                     ClientSecrets={
                         new Secret("secret".Sha256())
                     },
-                    RequirePkce = !false
+                    RequirePkce = !false,
+                    // RequireConsent = true
                 }
             };
     }
