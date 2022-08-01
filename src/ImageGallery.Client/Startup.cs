@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using IdentityModel;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
@@ -6,6 +7,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using System;
 using System.IdentityModel.Tokens.Jwt;
@@ -50,7 +53,10 @@ namespace ImageGallery.Client
             {
                 options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-            }).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
+            }).AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+            {
+                options.AccessDeniedPath = "/Authorization/AccessDenied"; // set access denied path when Role base authorization failed
+            })
             .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
             {
                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -66,9 +72,18 @@ namespace ImageGallery.Client
                 // options.Scope.Add("profile");
 
                 options.Scope.Add("address"); // request for address scope
+
+                options.Scope.Add("roles");
+                options.ClaimActions.MapUniqueJsonKey("role", "role"); // to added claim scope to ClaimIndetity
+                options.TokenValidationParameters = new TokenValidationParameters
+                { // to mapped to ClaimPrincipal IsInRole `User.IsInRole("PayingUser")`
+                    NameClaimType = JwtClaimTypes.GivenName,
+                    RoleClaimType = JwtClaimTypes.Role
+                };
+
                 options.SaveTokens = true;
                 options.ClientSecret = "secret";
-                // options.Prompt = OpenIdConnectPrompt.Consent;
+                // options.Prompt = OpenIdConnectPrompt.Consent; // to prompt consent screen on Client level
                 options.GetClaimsFromUserInfoEndpoint = true;
 
                 // options.ClaimActions.Remove("nbf"); // nbf by default exlcuded, uses Remove to includes it 

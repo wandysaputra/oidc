@@ -195,6 +195,7 @@ namespace ImageGallery.Client.Controllers
 
         }
 
+        [Authorize(Roles = "PayingUser, abc, def")] // multiple roles seprated with comma
         public async Task<IActionResult> OrderFrame()
         {
             var idpClient = _httpClientFactory.CreateClient("IDPClient");
@@ -223,6 +224,7 @@ namespace ImageGallery.Client.Controllers
 
             return View(new OrderFrameViewModel(address));
         }
+
         public async Task WriteOutIdentityInformation()
         {
             // get the saved identity token
