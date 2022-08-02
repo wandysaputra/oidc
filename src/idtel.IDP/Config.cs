@@ -21,7 +21,17 @@ namespace idtel.IDP
 
         public static IEnumerable<ApiScope> ApiScopes =>
             new ApiScope[]
-            { };
+            {
+                new ApiScope("imagegalleryapi", "Image Gallery API", new List<string>{"role"})
+            };
+
+        public static IEnumerable<ApiResource> ApiResources =>
+            new ApiResource[]
+            {
+                new ApiResource("imagegalleryapi", "Image Gallery API", new List<string>{"role"}){
+                    Scopes = {"imagegalleryapi"}
+                }
+            };
 
         public static IEnumerable<Client> Clients =>
             new Client[]
@@ -40,7 +50,8 @@ namespace idtel.IDP
                         IdentityServerConstants.StandardScopes.OpenId,
                         IdentityServerConstants.StandardScopes.Profile,
                         IdentityServerConstants.StandardScopes.Address, // allows to get address scope in claims
-                        "roles"
+                        "roles",
+                        "imagegalleryapi"
                     } ,
                     ClientSecrets={
                         new Secret("secret".Sha256())

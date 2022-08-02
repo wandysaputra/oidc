@@ -1,4 +1,5 @@
 ﻿using IdentityModel;
+using ImageGallery.Client.HttpHandlers;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -32,13 +33,17 @@ namespace ImageGallery.Client
             services.AddControllersWithViews()
                  .AddJsonOptions(opts => opts.JsonSerializerOptions.PropertyNamingPolicy = null);
 
+            services.AddHttpContextAccessor();
+            services.AddTransient<BearerTokenHandler>();
+
             // create an HttpClient used for accessing the API
             services.AddHttpClient("APIClient", client =>
             {
                 client.BaseAddress = new Uri("https://localhost:44366/");
                 client.DefaultRequestHeaders.Clear();
                 client.DefaultRequestHeaders.Add(HeaderNames.Accept, "application/json");
-            });
+            })
+            .AddHttpMessageHandler<BearerTokenHandler>();
 
             // create an HttpClient used for accessing the IDP API
             services.AddHttpClient("IDPClient", client =>
@@ -70,7 +75,6 @@ namespace ImageGallery.Client
                 // commentted out because by default added https://github.com/dotnet/aspnetcore/blob/main/src/Security/Authentication/OpenIdConnect/src/OpenIdConnectOptions.cs#L43
                 // options.Scope.Add("openid");
                 // options.Scope.Add("profile");
-
                 options.Scope.Add("address"); // request for address scope
 
                 options.Scope.Add("roles");
@@ -94,6 +98,8 @@ namespace ImageGallery.Client
                 options.ClaimActions.DeleteClaim("auth_time");
 
                 // options.ClaimActions.MapUniqueJsonKey("address", "address");
+
+                options.Scope.Add("imagegalleryapi");
             });
         }
 

@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -42,13 +43,28 @@ namespace ImageGallery.Client.Controllers
             var response = await httpClient.SendAsync(
                 request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
 
-            response.EnsureSuccessStatusCode();
-
-            using (var responseStream = await response.Content.ReadAsStreamAsync())
+            if (response.IsSuccessStatusCode)
             {
-                return View(new GalleryIndexViewModel(
-                    await JsonSerializer.DeserializeAsync<List<Image>>(responseStream)));
+                using (var responseStream = await response.Content.ReadAsStreamAsync())
+                {
+                    return View(new GalleryIndexViewModel(
+                        await JsonSerializer.DeserializeAsync<List<Image>>(responseStream)));
+                }
             }
+            else if (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.Forbidden)
+            {
+                return RedirectToAction("AccessDenied", "Authorization");
+            }
+
+            throw new Exception("Problem accessing API");
+
+            // response.EnsureSuccessStatusCode();
+
+            // using (var responseStream = await response.Content.ReadAsStreamAsync())
+            // {
+            //     return View(new GalleryIndexViewModel(
+            //         await JsonSerializer.DeserializeAsync<List<Image>>(responseStream)));
+            // }
         }
 
         public async Task<IActionResult> EditImage(Guid id)
@@ -132,6 +148,7 @@ namespace ImageGallery.Client.Controllers
             return RedirectToAction("Index");
         }
 
+        [Authorize(Roles = "PayingUser")]
         public IActionResult AddImage()
         {
             return View();
@@ -139,6 +156,7 @@ namespace ImageGallery.Client.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "PayingUser")]
         public async Task<IActionResult> AddImage(AddImageViewModel addImageViewModel)
         {
             if (!ModelState.IsValid)
@@ -215,9 +233,17 @@ namespace ImageGallery.Client.Controllers
                 Token = accessToken
             });
 
+            Console.WriteLine($"AccessToken : {accessToken}");
+
             if (userInfoResponse.IsError)
             {
                 throw new Exception("Problem accessing the UserInfo endpoint.", userInfoResponse.Exception);
+            }
+
+            // write out the userInfoResponse claims
+            foreach (var claim in userInfoResponse.Claims)
+            {
+                Console.WriteLine($"Claim type: {claim.Type} - Claim value: {claim.Value}");
             }
 
             var address = userInfoResponse.Claims.FirstOrDefault(f => f.Type == "address")?.Value;
@@ -238,6 +264,37 @@ namespace ImageGallery.Client.Controllers
             {
                 Console.WriteLine($"Claim type: {claim.Type} - Claim value: {claim.Value}");
             }
+
+            var idpClient = _httpClientFactory.CreateClient("IDPClient");
+
+            var metaDataResponse = await idpClient.GetDiscoveryDocumentAsync();
+
+            if (metaDataResponse.IsError)
+            {
+                throw new Exception("Problem accessing the discovery point", metaDataResponse.Exception);
+            }
+
+            var accessToken = await HttpContext.GetTokenAsync(OpenIdConnectParameterNames.AccessToken);
+
+            var userInfoResponse = await idpClient.GetUserInfoAsync(new UserInfoRequest
+            {
+                Address = metaDataResponse.UserInfoEndpoint,
+                Token = accessToken
+            });
+
+            Console.WriteLine($"AccessToken : {accessToken}");
+
+            if (userInfoResponse.IsError)
+            {
+                throw new Exception("Problem accessing the UserInfo endpoint.", userInfoResponse.Exception);
+            }
+
+            // write out the userInfoResponse claims
+            foreach (var claim in userInfoResponse.Claims)
+            {
+                Console.WriteLine($"Claim type: {claim.Type} - Claim value: {claim.Value}");
+            }
+
         }
     }
 }
