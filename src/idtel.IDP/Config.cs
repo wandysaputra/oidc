@@ -12,7 +12,9 @@ namespace idtel.IDP {
                 new IdentityResources.OpenId (),
                 new IdentityResources.Profile (),
                 new IdentityResources.Address (), // add address resource
-                new IdentityResource ("roles", "Your role(s)", new List<string> { "role" }) // custome scope/resource role
+                new IdentityResource ("roles", "Your role(s)", new List<string> { "role" }), // custome scope/resource role
+                new IdentityResource ("country", "The country you're living in", new List<string> { "country" }),
+                new IdentityResource ("subscriptionLevel", "Your Subscription Level", new List<string> { "subscriptionLevel" }),
             };
 
         public static IEnumerable<ApiScope> ApiScopes =>
@@ -44,7 +46,9 @@ namespace idtel.IDP {
                 IdentityServerConstants.StandardScopes.Profile,
                 IdentityServerConstants.StandardScopes.Address, // allows to get address scope in claims
                 "roles",
-                "imagegalleryapi"
+                "imagegalleryapi",
+                "country",
+                "subscriptionLevel"
                 },
                 ClientSecrets = {
                 new Secret ("secret".Sha256 ())

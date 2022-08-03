@@ -21,7 +21,8 @@ namespace IdentityServerHost.Quickstart.UI {
             new Claim ("family_name", "Underwood"),
             new Claim ("address", "Main Road 1"), // to be show in address resource/claim
             new Claim ("role", "FreeUser"),
-
+            new Claim ("subscriptionLevel", "FreeUser"),
+            new Claim ("country", "nl"),
             }
             },
             new TestUser {
@@ -34,6 +35,8 @@ namespace IdentityServerHost.Quickstart.UI {
             new Claim ("family_name", "Underwood"),
             new Claim ("address", "Big Street 2"),
             new Claim ("role", "PayingUser"),
+            new Claim ("subscriptionLevel", "PayingUser"),
+            new Claim ("country", "be"),
             }
             }
         };
