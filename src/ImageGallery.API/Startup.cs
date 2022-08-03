@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using System;
+using AutoMapper;
 using IdentityServer4.AccessTokenValidation;
 using ImageGallery.API.Entities;
 using ImageGallery.API.Services;
@@ -10,86 +11,72 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using System;
 
-namespace ImageGallery.API
-{
-    public class Startup
-    {
+namespace ImageGallery.API {
+    public class Startup {
         public IConfiguration Configuration { get; }
 
-        public Startup(IConfiguration configuration)
-        {
+        public Startup (IConfiguration configuration) {
             Configuration = configuration;
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services.AddControllers()
-                     .AddJsonOptions(opts => opts.JsonSerializerOptions.PropertyNamingPolicy = null);
+        public void ConfigureServices (IServiceCollection services) {
+            services.AddControllers ()
+                .AddJsonOptions (opts => opts.JsonSerializerOptions.PropertyNamingPolicy = null);
 
             services
-            .AddAuthentication(IdentityServerAuthenticationDefaults.AuthenticationScheme) // need bearer for authentication
-            .AddIdentityServerAuthentication(options =>
-            {
-                options.Authority = "https://localhost:44318";
-                options.ApiName = "imagegalleryapi"; // to validate audience
-            });
+                .AddAuthentication (IdentityServerAuthenticationDefaults.AuthenticationScheme) // need bearer for authentication
+                .AddIdentityServerAuthentication (options => {
+                    options.Authority = "https://localhost:44318";
+                    options.ApiName = "imagegalleryapi"; // to validate audience
+                });
 
             // register the DbContext on the container, getting the connection string from
             // appSettings (note: use this during development; in a production environment,
             // it's better to store the connection string in an environment variable)
-            services.AddDbContext<GalleryContext>(options =>
-            {
-                options.UseSqlServer(
+            services.AddDbContext<GalleryContext> (options => {
+                options.UseSqlServer (
                     Configuration["ConnectionStrings:ImageGalleryDBConnectionString"]);
             });
 
             // register the repository
-            services.AddScoped<IGalleryRepository, GalleryRepository>();
+            services.AddScoped<IGalleryRepository, GalleryRepository> ();
 
             // register AutoMapper-related services
-            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            services.AddAutoMapper (AppDomain.CurrentDomain.GetAssemblies ());
 
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {
-            if (env.IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler(appBuilder =>
-                {
-                    appBuilder.Run(async context =>
-                    {
+        public void Configure (IApplicationBuilder app, IWebHostEnvironment env) {
+            if (env.IsDevelopment ()) {
+                app.UseDeveloperExceptionPage ();
+            } else {
+                app.UseExceptionHandler (appBuilder => {
+                    appBuilder.Run (async context => {
                         // ensure generic 500 status code on fault.
-                        context.Response.StatusCode = StatusCodes.Status500InternalServerError; ;
-                        await context.Response.WriteAsync("An unexpected fault happened. Try again later.");
+                        context.Response.StatusCode = StatusCodes.Status500InternalServerError;;
+                        await context.Response.WriteAsync ("An unexpected fault happened. Try again later.");
                     });
                 });
-                // The default HSTS value is 30 days. You may want to change this for 
+                // The default HSTS value is 30 days. You may want to change this for
                 // production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
+                app.UseHsts ();
             }
 
-            app.UseHttpsRedirection();
+            app.UseHttpsRedirection ();
 
-            app.UseStaticFiles();
+            app.UseStaticFiles ();
 
-            app.UseRouting();
+            app.UseRouting ();
 
-            app.UseAuthentication();
+            app.UseAuthentication ();
 
-            app.UseAuthorization();
+            app.UseAuthorization ();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
+            app.UseEndpoints (endpoints => {
+                endpoints.MapControllers ();
             });
         }
     }
