@@ -29,6 +29,14 @@ namespace ImageGallery.Client {
             services.AddControllersWithViews ()
                 .AddJsonOptions (opts => opts.JsonSerializerOptions.PropertyNamingPolicy = null);
 
+            services.AddAuthorization (options => {
+                options.AddPolicy ("CanOrderFrame", configurePolicy => {
+                    configurePolicy.RequireAuthenticatedUser ();
+                    configurePolicy.RequireClaim ("country", "be");
+                    configurePolicy.RequireClaim ("subscriptionLevel", "PayingUser");
+                });
+            });
+
             services.AddHttpContextAccessor ();
             services.AddTransient<BearerTokenHandler> ();
 
@@ -89,6 +97,11 @@ namespace ImageGallery.Client {
                     // options.ClaimActions.MapUniqueJsonKey("address", "address");
 
                     options.Scope.Add ("imagegalleryapi");
+
+                    options.Scope.Add ("country");
+                    options.Scope.Add ("subscriptionLevel");
+                    options.ClaimActions.MapUniqueJsonKey ("country", "country");
+                    options.ClaimActions.MapUniqueJsonKey ("subscriptionLevel", "subscriptionLevel");
                 });
         }
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -70,18 +69,35 @@ namespace ImageGallery.Client.Controllers {
             var response = await httpClient.SendAsync (
                 request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait (false);
 
-            response.EnsureSuccessStatusCode ();
+            if (response.IsSuccessStatusCode) {
+                using (var responseStream = await response.Content.ReadAsStreamAsync ()) {
+                    var deserializedImage = await JsonSerializer.DeserializeAsync<Image> (responseStream);
 
-            using (var responseStream = await response.Content.ReadAsStreamAsync ()) {
-                var deserializedImage = await JsonSerializer.DeserializeAsync<Image> (responseStream);
+                    var editImageViewModel = new EditImageViewModel () {
+                        Id = deserializedImage.Id,
+                        Title = deserializedImage.Title
+                    };
 
-                var editImageViewModel = new EditImageViewModel () {
-                    Id = deserializedImage.Id,
-                    Title = deserializedImage.Title
-                };
-
-                return View (editImageViewModel);
+                    return View (editImageViewModel);
+                }
+            } else if (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.Forbidden) {
+                return RedirectToAction ("AccessDenied", "Authorization");
             }
+
+            throw new Exception ("Problem accessing API");
+
+            // response.EnsureSuccessStatusCode ();
+
+            // using (var responseStream = await response.Content.ReadAsStreamAsync ()) {
+            //     var deserializedImage = await JsonSerializer.DeserializeAsync<Image> (responseStream);
+
+            //     var editImageViewModel = new EditImageViewModel () {
+            //         Id = deserializedImage.Id,
+            //         Title = deserializedImage.Title
+            //     };
+
+            //     return View (editImageViewModel);
+            // }
         }
 
         [HttpPost]
@@ -113,9 +129,17 @@ namespace ImageGallery.Client.Controllers {
             var response = await httpClient.SendAsync (
                 request, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait (false);
 
-            response.EnsureSuccessStatusCode ();
+            if (response.IsSuccessStatusCode) {
+                return RedirectToAction ("Index");
+            } else if (response.StatusCode == HttpStatusCode.Unauthorized || response.StatusCode == HttpStatusCode.Forbidden) {
+                return RedirectToAction ("AccessDenied", "Authorization");
+            }
 
-            return RedirectToAction ("Index");
+            throw new Exception ("Problem accessing API");
+
+            // response.EnsureSuccessStatusCode ();
+
+            // return RedirectToAction ("Index");
         }
 
         public async Task<IActionResult> DeleteImage (Guid id) {
@@ -191,7 +215,8 @@ namespace ImageGallery.Client.Controllers {
 
         }
 
-        [Authorize (Roles = "PayingUser, abc, def")] // multiple roles seprated with comma
+        [Authorize (Policy = "CanOrderFrame")]
+        // [Authorize (Roles = "PayingUser, abc, def")] // multiple roles seprated with comma
         public async Task<IActionResult> OrderFrame () {
             var idpClient = _httpClientFactory.CreateClient ("IDPClient");
 

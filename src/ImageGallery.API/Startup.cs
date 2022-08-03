@@ -1,8 +1,9 @@
 ﻿using System;
-using AutoMapper;
 using IdentityServer4.AccessTokenValidation;
+using ImageGallery.API.Authorization;
 using ImageGallery.API.Entities;
 using ImageGallery.API.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -10,7 +11,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace ImageGallery.API {
     public class Startup {
@@ -24,6 +24,15 @@ namespace ImageGallery.API {
         public void ConfigureServices (IServiceCollection services) {
             services.AddControllers ()
                 .AddJsonOptions (opts => opts.JsonSerializerOptions.PropertyNamingPolicy = null);
+            services.AddHttpContextAccessor ();
+            services.AddScoped<IAuthorizationHandler, MustOwnImageHandler> ();
+
+            services.AddAuthorization (configure => {
+                configure.AddPolicy ("MustOwnImage", configurePolicy => {
+                    configurePolicy.RequireAuthenticatedUser ();
+                    configurePolicy.AddRequirements (new MustOwnImageRequirement ());
+                });
+            });
 
             services
                 .AddAuthentication (IdentityServerAuthenticationDefaults.AuthenticationScheme) // need bearer for authentication
