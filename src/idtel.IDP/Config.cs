@@ -32,6 +32,14 @@ namespace idtel.IDP {
         public static IEnumerable<Client> Clients =>
             new Client[] {
                 new Client {
+                // IdentityTokenLifetime = 300,
+                // AuthorizationCodeLifetime = 300,
+                AccessTokenLifetime = 120,
+                AllowOfflineAccess = true,
+                // AbsoluteRefreshTokenLifetime =2592000,
+                // RefreshTokenExpiration = TokenExpiration.Sliding,
+                // SlidingRefreshTokenLifetime = 1296000,
+                UpdateAccessTokenClaimsOnRefresh = true,
                 ClientName = "Image Gallery",
                 ClientId = "imagegalleryclient",
                 AllowedGrantTypes = GrantTypes.Code,

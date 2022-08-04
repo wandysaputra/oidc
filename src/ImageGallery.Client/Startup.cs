@@ -102,6 +102,8 @@ namespace ImageGallery.Client {
                     options.Scope.Add ("subscriptionLevel");
                     options.ClaimActions.MapUniqueJsonKey ("country", "country");
                     options.ClaimActions.MapUniqueJsonKey ("subscriptionLevel", "subscriptionLevel");
+
+                    options.Scope.Add ("offline_access");
                 });
         }
 
