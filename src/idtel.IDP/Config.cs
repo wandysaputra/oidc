@@ -25,13 +25,15 @@ namespace idtel.IDP {
         public static IEnumerable<ApiResource> ApiResources =>
             new ApiResource[] {
                 new ApiResource ("imagegalleryapi", "Image Gallery API", new List<string> { "role" }) {
-                Scopes = { "imagegalleryapi" }
+                Scopes = { "imagegalleryapi" },
+                ApiSecrets = { new Secret ("apisecret".Sha256 ()) }
                 }
             };
 
         public static IEnumerable<Client> Clients =>
             new Client[] {
                 new Client {
+                AccessTokenType = AccessTokenType.Reference,
                 // IdentityTokenLifetime = 300,
                 // AuthorizationCodeLifetime = 300,
                 AccessTokenLifetime = 120,
