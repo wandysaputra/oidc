@@ -56,6 +56,10 @@ namespace ImageGallery.Client.HttpHandlers {
             var refreshToken = await httpContextAccessor.HttpContext.GetTokenAsync (OpenIdConnectParameterNames.RefreshToken);
             Console.WriteLine ($"Current Refresh Token : {refreshToken}");
 
+            if (string.IsNullOrWhiteSpace (refreshToken)) {
+                return default;
+            }
+
             var refreshResponse = await idpClient.RequestRefreshTokenAsync (new RefreshTokenRequest {
                 Address = discoveryResponse.TokenEndpoint,
                     ClientId = "imagegalleryclient",

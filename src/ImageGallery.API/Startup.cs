@@ -39,6 +39,7 @@ namespace ImageGallery.API {
                 .AddIdentityServerAuthentication (options => {
                     options.Authority = "https://localhost:44318";
                     options.ApiName = "imagegalleryapi"; // to validate audience
+                    options.ApiSecret = "apisecret";
                 });
 
             // register the DbContext on the container, getting the connection string from

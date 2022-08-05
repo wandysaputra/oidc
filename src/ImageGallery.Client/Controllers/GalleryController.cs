@@ -207,12 +207,58 @@ namespace ImageGallery.Client.Controllers {
         }
 
         public async void Logout () {
-            // sign out from ImageGallery Client
-            await HttpContext.SignOutAsync (CookieAuthenticationDefaults.AuthenticationScheme);
 
-            // sign out from OIDC
-            await HttpContext.SignOutAsync (OpenIdConnectDefaults.AuthenticationScheme);
+            if (User?.Identity.IsAuthenticated ?? false) {
+                // sign out from ImageGallery Client
+                await HttpContext.SignOutAsync (CookieAuthenticationDefaults.AuthenticationScheme);
+                Console.WriteLine ("Signed Out from Image Gallery Client");
+            }
 
+            if (!string.IsNullOrWhiteSpace (HttpContext?.User?.Identity?.Name)) {
+                 // sign out from OIDC
+                await HttpContext.SignOutAsync (OpenIdConnectDefaults.AuthenticationScheme);
+                Console.WriteLine ("Signed Out from OIDC");
+            }
+
+            string accessToken = await HttpContext.GetTokenAsync (OpenIdConnectParameterNames.AccessToken);
+            string refreshToken = await HttpContext.GetTokenAsync (OpenIdConnectParameterNames.RefreshToken);
+
+            var idpClient = _httpClientFactory.CreateClient ("IDPClient");
+
+            var discoveryDocumentResponse = await idpClient.GetDiscoveryDocumentAsync ();
+            if (discoveryDocumentResponse.IsError) {
+                throw new Exception (discoveryDocumentResponse.Error);
+            }
+
+            if (!string.IsNullOrWhiteSpace (accessToken)) {
+                var accessTokenRevocationResponse = await idpClient.RevokeTokenAsync (new TokenRevocationRequest {
+                    Address = discoveryDocumentResponse.RevocationEndpoint,
+                        ClientId = "imagegalleryclient",
+                        ClientSecret = "secret",
+                        Token = accessToken,
+                });
+
+                if (accessTokenRevocationResponse.IsError) {
+                    throw new Exception (accessTokenRevocationResponse.Error);
+                }
+            } else {
+                Console.WriteLine ($"Invalid access token : {accessToken}");
+            }
+
+            if (!string.IsNullOrWhiteSpace (refreshToken)) {
+                var refreshTokenRevocationResponse = await idpClient.RevokeTokenAsync (new TokenRevocationRequest {
+                    Address = discoveryDocumentResponse.RevocationEndpoint,
+                        ClientId = "imagegalleryclient",
+                        ClientSecret = "secret",
+                        Token = refreshToken,
+                });
+
+                if (refreshTokenRevocationResponse.IsError) {
+                    throw new Exception (refreshTokenRevocationResponse.Error);
+                }
+            } else {
+                Console.WriteLine ($"Invalid refresh token : {refreshToken}");
+            }
         }
 
         [Authorize (Policy = "CanOrderFrame")]
@@ -271,22 +317,27 @@ namespace ImageGallery.Client.Controllers {
 
             var accessToken = await HttpContext.GetTokenAsync (OpenIdConnectParameterNames.AccessToken);
 
-            var userInfoResponse = await idpClient.GetUserInfoAsync (new UserInfoRequest {
-                Address = metaDataResponse.UserInfoEndpoint,
-                    Token = accessToken
-            });
+            if (!string.IsNullOrWhiteSpace (accessToken)) {
 
-            Console.WriteLine ($"AccessToken : {accessToken}");
+                var userInfoResponse = await idpClient.GetUserInfoAsync (new UserInfoRequest {
+                    Address = metaDataResponse.UserInfoEndpoint,
+                        Token = accessToken
+                });
 
-            if (userInfoResponse.IsError) {
-                throw new Exception ("Problem accessing the UserInfo endpoint.", userInfoResponse.Exception);
+                Console.WriteLine ($"AccessToken : {accessToken}");
+
+                if (userInfoResponse.IsError) {
+                    // throw new Exception ("Problem accessing the UserInfo endpoint.", userInfoResponse.Exception);
+                    Console.WriteLine ($"Problem accessing the UserInfo endpoint. {userInfoResponse.Exception}");
+                } else {
+                    // write out the userInfoResponse claims
+                    foreach (var claim in userInfoResponse.Claims) {
+                        Console.WriteLine ($"Claim type: {claim.Type} - Claim value: {claim.Value}");
+                    }
+                }
+            } else {
+                Console.WriteLine ($"Invalid AccessToken :: {accessToken}");
             }
-
-            // write out the userInfoResponse claims
-            foreach (var claim in userInfoResponse.Claims) {
-                Console.WriteLine ($"Claim type: {claim.Type} - Claim value: {claim.Value}");
-            }
-
         }
     }
 }
