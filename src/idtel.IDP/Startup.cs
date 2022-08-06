@@ -62,7 +62,16 @@ namespace idtel.IDP
                 endpoints.MapDefaultControllerRoute();
             });
         }
-
+/*
+- To generate local certificate, open powershell as admin and execute below script
+`New-SelfSignedCertificate -Subject "CN=IdTelIdSrvSigningCert" -CertStoreLocation "cert:\LocalMachine\My"`
+- Open `Manage computer certificates`
+- Go to certifcation we just created  in folder Personal\Certificates
+- Double click it and go to details
+- Copy the thumbprint's value
+- Copy the certificate and paste it to folder Trusted Root Certification Authorities\Certificates
+- Once implemented in IDP level, go to /.well-known/openid-configuration/jwks and check kid's value, it should be same as thumbprint's value
+*/
         public X509Certificate2 LoadCertificateFromStore(){
             string thumbPrint = "b87746f2096eff567c7ee8bef1c00b05b6f77703";
 
