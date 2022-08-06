@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 
 
+using System;
+using System.Security.Cryptography.X509Certificates;
 using IdentityServerHost.Quickstart.UI;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -36,7 +38,8 @@ namespace idtel.IDP
                 .AddTestUsers(TestUsers.Users);
 
             // not recommended for production - you need to store your key material somewhere secure
-            builder.AddDeveloperSigningCredential();
+            // builder.AddDeveloperSigningCredential();
+            builder.AddSigningCredential(LoadCertificateFromStore());
         }
 
         public void Configure(IApplicationBuilder app)
@@ -58,6 +61,21 @@ namespace idtel.IDP
             {
                 endpoints.MapDefaultControllerRoute();
             });
+        }
+
+        public X509Certificate2 LoadCertificateFromStore(){
+            string thumbPrint = "b87746f2096eff567c7ee8bef1c00b05b6f77703";
+
+            using (var store = new X509Store(StoreName.My, StoreLocation.LocalMachine)){
+                store.Open(OpenFlags.ReadOnly);
+                var certCollection = store.Certificates.Find(X509FindType.FindByThumbprint, thumbPrint, true);
+
+                if(certCollection.Count == 0){
+                    throw new Exception("The specified certificate wasn't found!");
+                }
+
+                return certCollection[0];
+            }
         }
     }
 }
